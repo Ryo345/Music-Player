@@ -6,7 +6,11 @@ const albumCover = document.querySelector('.album-cover');
 const songTitle = document.querySelector('.song-title');
 const nextButton = document.querySelector('.next-button');
 const prevButton = document.querySelector('.prev-button');
-const audioSource = document.querySelector('audio');
+const currentTimeDisplay = document.querySelector('.current-time');
+const durationDisplay = document.querySelector('.duration');
+const progress = document.querySelector('.progress-bar');
+const volumeBar = document.querySelector('.volume-bar');
+
 
 const songs = [
     {
@@ -25,7 +29,7 @@ let currentSongIndex = 0;
 
 function loadSong(index) {
     const song = songs[index];
-    audioSource.src = song.audio;
+    audio.src = song.audio;
     albumCover.src = song.cover;
     songTitle.textContent = song.title;
 }
@@ -68,8 +72,6 @@ nextButton.addEventListener('click', nextSong);
 prevButton.addEventListener('click', prevSong);
 audio.addEventListener('ended', nextSong);
 
-const progress = document.querySelector('.progress-bar');
-
 audio.addEventListener('timeupdate', function () {
     if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
 
@@ -82,8 +84,6 @@ progress.addEventListener('input', function () {
     audio.currentTime = (progress.value / 100) * audio.duration;
 });
 
-const volumeBar = document.querySelector('.volume-bar');
-
 audio.addEventListener('volumechange', function () {
     volumeBar.value = audio.volume * 100;
 });
@@ -91,3 +91,23 @@ audio.addEventListener('volumechange', function () {
 volumeBar.addEventListener('input', function () {
     audio.volume = volumeBar.value / 100;
 });
+
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return mins + ':' + String(secs).padStart(2, '0');
+}
+
+audio.addEventListener('loadedmetadata', function () {;
+    durationDisplay.textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener('timeupdate', function () {
+    if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+
+    progress.value = (audio.currentTime / audio.duration) * 100;
+    currentTimeDisplay.textContent = formatTime(audio.currentTime);
+});
+
+
