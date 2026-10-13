@@ -10,6 +10,9 @@ const currentTimeDisplay = document.querySelector('.current-time');
 const durationDisplay = document.querySelector('.duration');
 const progress = document.querySelector('.progress-bar');
 const volumeBar = document.querySelector('.volume-bar');
+const fileInput = document.querySelector('.file-input');
+const playlist = document.querySelector('.playlist');
+
 
 
 const songs = [
@@ -17,13 +20,9 @@ const songs = [
         title: 'Oasis - Wonderwall',
         cover: 'assets/img/oasis-wonderwall-cover.jpg',
         audio: 'assets/audio/oasis-wonderwall.mp3'
-    },
-    {
-        title: 'Song 2',
-        cover: 'assets/img/oasis-wonderwall-cover.jpg',
-        audio: 'assets/audio/oasis-wonderwall.mp3'
     }
 ];
+
 
 let currentSongIndex = 0;
 
@@ -76,6 +75,7 @@ audio.addEventListener('timeupdate', function () {
     if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
 
     progress.value = (audio.currentTime / audio.duration) * 100;
+    currentTimeDisplay.textContent = formatTime(audio.currentTime);
 });
 
 progress.addEventListener('input', function () {
@@ -99,15 +99,47 @@ function formatTime(seconds) {
     return mins + ':' + String(secs).padStart(2, '0');
 }
 
-audio.addEventListener('loadedmetadata', function () {;
+audio.addEventListener('loadedmetadata', function () {
     durationDisplay.textContent = formatTime(audio.duration);
 });
 
-audio.addEventListener('timeupdate', function () {
-    if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
 
-    progress.value = (audio.currentTime / audio.duration) * 100;
-    currentTimeDisplay.textContent = formatTime(audio.currentTime);
+fileInput.addEventListener('change', function (event) {
+    for (const file of event.target.files) {
+        const url = URL.createObjectURL(file);
+        const title = file.name.replace('.mp3', '');
+        const cover = 'assets/img/default-cover.jpg';
+        const firstNewIndex = songs.length;
+
+        songs.push({ title, cover, audio: url });
+    }
+    if (event.target.files.length === 0) return;
+
+    console.log(songs);
+    currentSongIndex = firstNewIndex;
+    loadSong(currentSongIndex);
+    playSong();
 });
 
 
+function renderPlaylist() {
+    playlist.innerHTML = '';
+
+    songs.forEach(function (song, index) {
+        const item = document.createElement('li');
+        item.textContent = song.title;
+
+        if (index === currentSongIndex) {
+            item.classList.add('active');
+        }
+
+        item.addEventListener('click', function () {
+            currentSongIndex = index;
+            loadSong(index);
+            playSong();
+        });
+        playlist.appendChild(item);
+    });
+}
+
+renderPlaylist();
