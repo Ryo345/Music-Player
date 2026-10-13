@@ -106,6 +106,10 @@ audio.addEventListener('loadedmetadata', function () {
 
 
 fileInput.addEventListener('change', function (event) {
+    if (event.target.files.length === 0) return;
+
+    const firstNewIndex = songs.length;
+
     for (const file of event.target.files) {
         const url = URL.createObjectURL(file);
         const title = file.name.replace('.mp3', '');
@@ -113,11 +117,11 @@ fileInput.addEventListener('change', function (event) {
 
         songs.push({ title, cover, audio: url });
     }
-    if (event.target.files.length === 0) return;
 
-    console.log(songs);
+    currentSongIndex = firstNewIndex;
     loadSong(currentSongIndex);
     playSong();
+    fileInput.value = '';
 });
 
 
@@ -153,12 +157,23 @@ function renderPlaylist() {
 
 
 function deleteSong(index) {
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'X';
-    deleteButton.classList.add('remove-button');
     if (index < 0 || index >= songs.length) return;
 
     songs.splice(index, 1);
+
+    if (songs.length === 0) {
+        pauseSong();
+        audio.removeAttribute('src');
+        audio.load();
+        currentSongIndex = 0;
+        albumCover.src = 'assets/img/default-cover.jpg';
+        songTitle.textContent = 'No Song Playing';
+        currentTimeDisplay.textContent = '0:00';
+        durationDisplay.textContent = '0:00';
+        progress.value = 0;
+        renderPlaylist();
+        return;
+    }
 
     if (currentSongIndex === index) {
         currentSongIndex = 0;
@@ -167,4 +182,6 @@ function deleteSong(index) {
     } else if (currentSongIndex > index) {
         currentSongIndex--;
     }
+
+    renderPlaylist();
 }
