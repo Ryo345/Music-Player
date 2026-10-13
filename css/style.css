@@ -1,0 +1,251 @@
+body {
+    background-color: #313030;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+    margin: 0;
+    color: #fff;
+}
+
+header {
+    background-color: #1a1a1a;
+    color: #fff;
+    padding: 20px;
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+
+.logo {
+    font-size: 36px;
+    margin: 20px;
+}
+
+.menu-list {
+    flex-direction: row;
+    display: flex;
+    gap: 20px;
+    list-style: none;
+    font-size: 18px;
+}
+
+.menu-list li a{
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #fff;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.album-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+}
+
+.album-cover {
+    width: 300px;
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+.now-playing-section {
+    text-align: center;
+    margin-top: 50px;
+}
+
+
+.play-button {
+    margin-right: 20px;
+    margin-left: 20px;
+
+}
+
+
+.vinyl-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+}
+
+.vinyl-record {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+}
+
+.vinyl {
+    animation: spin 3s linear infinite;
+    animation-play-state: paused;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 280px;
+    height: 280px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #111 0%,
+            #111 8%,
+            #222 8.5%,
+            #111 9%,
+            #111 20%,
+            #222 20.5%,
+            #111 21%,
+            #111 35%,
+            #222 35.5%,
+            #111 36%,
+            #111 50%,
+            #222 50.5%,
+            #111 51%,
+            #111 65%,
+            #222 65.5%,
+            #111 66%,
+            #111 80%,
+            #222 80.5%,
+            #302727 81%
+        );
+
+    box-shadow:
+        inset 0 0 20px #000,
+        0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.vinyl.spinning {
+    animation-play-state: running;
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+.record-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background: #8b1e2d;
+
+}
+
+.center-hole {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    background: #111;
+}
+
+.turntable {
+    position: relative;
+    top: 50%;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+    background-color: #222;
+}
+
+
+
+
+
+
+
+.turntable-arm {
+    position: absolute;
+    top: 10%;
+    left: 85%;
+    width: 180px;
+    height: 10px;
+    background-color: #555;
+    transform-origin: top left;
+    transform: rotate(90deg);
+    /* resting */
+    transition: transform 1s ease-in-out;
+}
+
+.turntable.playing .turntable-arm {
+    transform: rotate(110deg);
+    /* on the record */
+}
+
+.turntable.playing .vinyl {
+    animation-play-state: running;
+    /* replaces .vinyl.spinning */
+}
+
+
+.turntable-arm::before {
+    content: '';
+    position: absolute;
+    top:  -50%;
+    left: -5%;
+    width: 20px;
+    height: 20px;
+    background-color: #555;
+    border-radius: 50%;
+}
+
+.turntable-needle {
+    position: absolute;
+    top: 60%;
+    left: 95%;
+
+    width: 5px;
+    height: 50px;
+    background-color: #555;
+    transform-origin: top center;
+    transform: rotate(290deg);
+    transition: transform 0.3s ease-in-out;
+}
+
+.turntable-needle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    background-color: #555;
+    border-radius: 50%;
+}
+
+
+
