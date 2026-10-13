@@ -197,18 +197,15 @@ header {
     background-color: #555;
     transform-origin: top left;
     transform: rotate(90deg);
-    /* resting */
     transition: transform 1s ease-in-out;
 }
 
 .turntable.playing .turntable-arm {
     transform: rotate(110deg);
-    /* on the record */
 }
 
 .turntable.playing .vinyl {
     animation-play-state: running;
-    /* replaces .vinyl.spinning */
 }
 
 
