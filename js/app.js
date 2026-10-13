@@ -31,6 +31,7 @@ function loadSong(index) {
     audio.src = song.audio;
     albumCover.src = song.cover;
     songTitle.textContent = song.title;
+    renderPlaylist();
 }
 
 loadSong(currentSongIndex);
@@ -109,14 +110,12 @@ fileInput.addEventListener('change', function (event) {
         const url = URL.createObjectURL(file);
         const title = file.name.replace('.mp3', '');
         const cover = 'assets/img/default-cover.jpg';
-        const firstNewIndex = songs.length;
 
         songs.push({ title, cover, audio: url });
     }
     if (event.target.files.length === 0) return;
 
     console.log(songs);
-    currentSongIndex = firstNewIndex;
     loadSong(currentSongIndex);
     playSong();
 });
@@ -138,8 +137,34 @@ function renderPlaylist() {
             loadSong(index);
             playSong();
         });
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'X';
+        deleteButton.classList.add('remove-button');
+        deleteButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            deleteSong(index);
+        });
+
+        item.appendChild(deleteButton);
         playlist.appendChild(item);
     });
 }
 
-renderPlaylist();
+
+function deleteSong(index) {
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'X';
+    deleteButton.classList.add('remove-button');
+    if (index < 0 || index >= songs.length) return;
+
+    songs.splice(index, 1);
+
+    if (currentSongIndex === index) {
+        currentSongIndex = 0;
+        loadSong(currentSongIndex);
+        pauseSong();
+    } else if (currentSongIndex > index) {
+        currentSongIndex--;
+    }
+}
