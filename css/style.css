@@ -314,3 +314,10 @@ input[type="file"]:focus+label {
     padding: 10px;
     border-radius: 10px;
 }
+
+
+.playlist li {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+}
