@@ -3,76 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VINYL</title>
+    <title>vinyl — a little record player</title>
+    <meta name="description" content="A tiny turntable built with plain HTML, CSS and JavaScript. It ships with one record; drop your own audio files anywhere on the page to add more — nothing leaves your browser.">
+    <meta property="og:title" content="vinyl — a little record player">
+    <meta property="og:description" content="A tiny hand-built turntable. Drop your own mp3s on the table.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%230e0e10'/%3E%3Ccircle cx='16' cy='16' r='12.5' fill='none' stroke='%2343464e' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%2330333a' stroke-width='1.2'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23d6dbe2'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
-        <h1 class="logo">
-            VINYL
-        </h1>
 
-        <nav class="menu">
-            <ul class="menu-list">
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Albums</a></li>
-                <li><a href="#">Library</a></li>
-                <li><a href="#">Playlist</a></li>
-            </ul>
-        </nav>
+    <header class="site-header">
+        <h1 class="logo">vinyl<span class="logo-dot">.</span></h1>
+        <p class="tagline">a little record player — plain html, css & js, no libraries</p>
     </header>
 
+    <main>
+        <div class="studio">
 
-    <main class="main-content">
+            <section class="deck-wrap" aria-label="turntable">
+                <div class="turntable" id="turntable">
+                    <div class="deck">
 
-        <section class="now-playing-section">
-            <img src="assets\img\oasis-wonderwall-cover.jpg" alt="Oasis - Wonderwall" class="album-cover">
-            
-            <h2 class="section-title">NOW PLAYING</h2>
-            <h3 class="song-title">Oasis - Wonderwall</h3>
+                        <div class="platter" role="button" tabindex="0" aria-label="play or pause">
+                            <div class="vinyl">
+                                <div class="record-label" id="record-label"></div>
+                            </div>
+                            <div class="sheen"></div>
+                            <div class="spindle"></div>
+                        </div>
 
-            <audio controls src="assets\audio\oasis-wonderwall.mp3" class="audio-player"></audio>
-            <div class="time-display">
-                <span class="current-time">0:00</span>
+                        <div class="tonearm">
+                            <div class="arm">
+                                <span class="arm-tube"></span>
+                                <span class="counterweight"></span>
+                                <span class="headshell"></span>
+                            </div>
+                            <span class="pivot-cap"></span>
+                        </div>
 
-                <input
-                type="range"
-                class="progress-bar"
-                value="0"
-                min="0"
-                max="100"
-                step="1">
-                <span class="duration">0:00</span>
-            </div>
-            <input type="range" class="volume-bar" value="1" min="0" max="1" step="0.01">
+                        <span class="arm-rest" aria-hidden="true"></span>
+                        <p class="deck-plate">vinyl-01 · belt drive · stereo</p>
 
-            <button class="prev-button">Prev</button>
-            <button class="play-button">Play</button>
-            <button class="next-button">Next</button>
-        </section>
+                        <div class="deck-controls">
+                            <button class="speed-btn is-active" data-rpm="33">33⅓</button>
+                            <button class="speed-btn" data-rpm="45">45</button>
+                            <span class="led" aria-hidden="true"></span>
+                        </div>
 
-        <section class="vinyl-content">
-        
-            <div class="turntable">
-        
-                <div class="turntable-base"></div>
-        
-                <div class="vinyl-record">
-                    <div class="vinyl">
-                        <div class="record-label"></div>
-                        <div class="center-hole"></div>
                     </div>
                 </div>
-        
-                <div class="turntable-arm">
-                    <div class="turntable-needle"></div>
-                </div>
-        
-            </div>
-        
-        </section>
+                <p class="deck-hint">click the record to drop the needle</p>
+            </section>
 
+            <section class="player" aria-label="now playing">
+                <p class="label">now playing</p>
+
+                <div class="track-head">
+                    <img class="album-cover" src="assets/img/oasis-wonderwall-cover.jpg" alt="">
+                    <div class="track-meta">
+                        <h2 class="song-title">Wonderwall</h2>
+                        <p class="song-artist">Oasis · (What's the Story) Morning Glory? · 1995</p>
+                    </div>
+                </div>
+
+                <div class="seek-row">
+                    <span class="current-time">0:00</span>
+                    <input type="range" class="progress-bar" value="0" min="0" max="100" step="1" aria-label="seek">
+                    <span class="duration">0:00</span>
+                </div>
+
+                <div class="transport">
+                    <button class="skip-button prev-button" aria-label="previous track">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h2v14H7zM19 5v14l-9-7z"/></svg>
+                    </button>
+                    <button class="play-button" aria-label="play">
+                        <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                        <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+                    </button>
+                    <button class="skip-button next-button" aria-label="next track">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5h2v14h-2zM5 5v14l9-7z"/></svg>
+                    </button>
+
+                    <div class="volume">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/></svg>
+                        <input type="range" class="volume-bar" value="0.8" min="0" max="1" step="0.05" aria-label="volume">
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <section class="crate-section" aria-label="the crate">
+            <div class="crate-head">
+                <h2 class="label">the crate</h2>
+                <span class="crate-count" id="crate-count">1 record</span>
+                <span class="crate-hint">drop audio files anywhere on the page to add more</span>
+            </div>
+            <ul class="crate" id="crate"></ul>
+        </section>
     </main>
+
+    <footer class="site-footer">
+        <p>vinyl.</p>
+        <p>space — play/pause · ←/→ — skip ten seconds · everything runs locally, nothing gets uploaded</p>
+    </footer>
+
+    <div class="drop-veil" hidden aria-hidden="true"><p>drop the record on the table</p></div>
+    <p class="notice" id="notice" role="status" aria-live="polite" hidden></p>
+
+    <audio src="assets/audio/oasis-wonderwall.mp3" preload="metadata"></audio>
+    <script src="js/app.js"></script>
 </body>
-<script src="js/app.js"></script>
 </html>
