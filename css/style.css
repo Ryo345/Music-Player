@@ -1,323 +1,887 @@
+/* vinyl — a little record player
+   matte-black hi-fi: black deck, silver hardware, white pilot lights, and a needle that tracks the song */
+
+:root {
+    --bg: #101013;
+    --panel: #16171c;
+    --panel-2: #1e1f24;
+    --line: #2a2b31;
+    --ink: #eceef2;
+    --ink-dim: #8b9099;
+    --accent: #f2f4f8;
+    --accent-soft: rgba(242, 244, 248, 0.09);
+    --label-red: #8b1e2d;
+    --serif: 'Fraunces', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    background-color: #313030;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    font-weight: normal;
     margin: 0;
-    color: #fff;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+    background:
+        radial-gradient(1100px 640px at 74% -12%, #1b1c21 0%, rgba(27, 28, 33, 0) 62%),
+        var(--bg);
 }
 
-header {
-    background-color: #1a1a1a;
-    color: #fff;
-    padding: 20px;
-    flex-direction: row;
+/* film grain over everything, so flat digital colors don't feel sterile */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+    background: rgba(242, 244, 248, 0.25);
+}
+
+:focus-visible {
+    outline: 2px solid rgba(242, 244, 248, 0.6);
+    outline-offset: 3px;
+}
+
+/* ---------- header / footer ---------- */
+
+.site-header {
+    width: min(1160px, 92vw);
+    margin: 34px auto 0;
+    padding-bottom: 22px;
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    align-items: center;
+    gap: 18px;
     flex-wrap: wrap;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
 
 .logo {
-    font-size: 36px;
-    margin: 20px;
+    margin: 0;
+    font: 650 clamp(26px, 3vw, 32px) var(--serif);
+    letter-spacing: -0.02em;
+    color: var(--ink);
 }
 
-.menu-list {
-    flex-direction: row;
+.logo-dot {
+    color: var(--accent);
+}
+
+@keyframes dot-pulse {
+    50% { opacity: 0.3; }
+}
+
+body.playing .logo-dot {
+    animation: dot-pulse 1.8s ease-in-out infinite;
+}
+
+.tagline {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--ink-dim);
+}
+
+.site-footer {
+    width: min(1160px, 92vw);
+    margin: 0 auto 54px;
+    padding-top: 22px;
     display: flex;
-    gap: 20px;
-    list-style: none;
-    font-size: 18px;
-}
-
-.menu-list li a{
-    text-decoration: none;
-    text-transform: uppercase;
-    font-weight: bold;
-    color: #fff;
-}
-
-.main-content {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
-    margin: 0 auto;
+    gap: 18px;
     flex-wrap: wrap;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    color: var(--ink-dim);
+    font-size: 12px;
 }
 
-.album-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 50px;
+.site-footer p {
+    margin: 0;
 }
 
-.album-cover {
-    width: 300px;
-    height: 300px;
-    margin-bottom: 20px;
+.site-footer p:first-child {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--ink);
 }
 
-.now-playing-section {
-    text-align: center;
-    margin-top: 50px;
+/* ---------- layout ---------- */
+
+main {
+    width: min(1160px, 92vw);
+    margin: clamp(28px, 4vw, 48px) auto clamp(56px, 8vw, 100px);
 }
 
-
-.play-button {
-    margin-right: 20px;
-    margin-left: 20px;
-
+.studio {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: clamp(40px, 6vw, 84px);
+    align-items: start;
 }
 
-
-.vinyl-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 50px;
+.label {
+    margin: 0;
+    font: 500 11px var(--mono);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
 }
 
-.vinyl-record {
+/* ---------- the turntable ----------
+   deck is drawn on a 560x350 grid, everything inside uses cqw
+   (1cqw = 5.6px at full size) so the whole thing scales cleanly */
+
+.turntable {
+    --arm: 26deg;
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+}
+
+.deck {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 560 / 350;
+    container-type: size;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background:
+        repeating-linear-gradient(97deg,
+            rgba(255, 255, 255, 0.022) 0 2px,
+            rgba(0, 0, 0, 0) 2px 7px,
+            rgba(0, 0, 0, 0.16) 7px 8px),
+        radial-gradient(140% 130% at 18% 0%, rgba(205, 212, 228, 0.10) 0%, rgba(205, 212, 228, 0) 52%),
+        linear-gradient(160deg, #26272d 0%, #1a1b20 52%, #101115 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.11),
+        inset 0 -34px 60px rgba(0, 0, 0, 0.4),
+        0 34px 70px -12px rgba(0, 0, 0, 0.75),
+        0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* platter + record */
+
+.platter {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    left: 34cqw;
+    top: 31.25cqw;   /* dead center of the 62.5cqw-tall deck, so the record doesn't hug the bottom */
+    width: 56cqw;
+    aspect-ratio: 1;
     transform: translate(-50%, -50%);
-    width: 300px;
-    height: 300px;
-    margin: 0 auto;
+    border-radius: 50%;
+    cursor: pointer;
+    background:
+        conic-gradient(from 118deg,
+            rgba(255, 255, 255, 0.10) 0deg,
+            rgba(255, 255, 255, 0) 55deg,
+            rgba(0, 0, 0, 0.10) 150deg,
+            rgba(255, 255, 255, 0.05) 262deg,
+            rgba(0, 0, 0, 0.08) 330deg),
+        radial-gradient(circle,
+            #202127 0 43%,
+            #a8adb6 47% 62%,
+            #979da9 62% 74%,
+            #82878f 74% 90%,
+            #63676f 90% 97%,
+            #4a4d54 97% 100%),
+        #82878f;
+    box-shadow:
+        0 0.7cqw 2cqw rgba(0, 0, 0, 0.55),
+        0 0 0 0.4cqw rgba(0, 0, 0, 0.5),
+        0 0 0 5cqw rgba(0, 0, 0, 0.16),
+        inset 0 0 2cqw rgba(0, 0, 0, 0.45);
+    transition: box-shadow 0.3s;
+}
+
+.platter:hover {
+    box-shadow:
+        0 0.7cqw 2cqw rgba(0, 0, 0, 0.55),
+        0 0 0 0.4cqw rgba(0, 0, 0, 0.5),
+        0 0 0 5cqw rgba(0, 0, 0, 0.16),
+        inset 0 0 2cqw rgba(0, 0, 0, 0.45),
+        0 0 3cqw rgba(242, 244, 248, 0.1);
+}
+
+.platter:focus-visible {
+    outline-offset: 8px;
 }
 
 .vinyl {
-    animation: spin 3s linear infinite;
-    animation-play-state: paused;
     position: absolute;
-    top: 50%;
     left: 50%;
+    top: 50%;
+    width: 95.7%;
+    aspect-ratio: 1;
     transform: translate(-50%, -50%);
-
-    width: 280px;
-    height: 280px;
-
     border-radius: 50%;
-
     background:
-        radial-gradient(
-            circle,
-            #111 0%,
-            #111 8%,
-            #222 8.5%,
-            #111 9%,
-            #111 20%,
-            #222 20.5%,
-            #111 21%,
-            #111 35%,
-            #222 35.5%,
-            #111 36%,
-            #111 50%,
-            #222 50.5%,
-            #111 51%,
-            #111 65%,
-            #222 65.5%,
-            #111 66%,
-            #111 80%,
-            #222 80.5%,
-            #302727 81%
-        );
-
+        repeating-radial-gradient(circle,
+            #08090c 0 0.42cqw,
+            #13141a 0.42cqw 0.64cqw),
+        #0d0e12;
     box-shadow:
-        inset 0 0 20px #000,
-        0 5px 15px rgba(0, 0, 0, 0.5);
+        inset 0 0 3cqw rgba(0, 0, 0, 0.8),
+        0 0.25cqw 1.2cqw rgba(0, 0, 0, 0.6);
+    animation: spin 1.8s linear infinite;
+    animation-play-state: paused;
 }
 
-.vinyl.spinning {
+body.playing .vinyl {
     animation-play-state: running;
 }
 
+.turntable.speed-45 .vinyl {
+    animation-duration: 1.33s;
+}
+
 @keyframes spin {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    100% {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .record-label {
     position: absolute;
-    top: 50%;
+    inset: 32%;
+    border-radius: 50%;
+    background-color: var(--label-red);   /* fallback when a track has no art */
+    background-image: url('../assets/img/oasis-wonderwall-cover.jpg');
+    background-size: cover;
+    background-position: center;
+    box-shadow:
+        inset 0 0 2.5cqw rgba(0, 0, 0, 0.55),
+        0 0 0 0.25cqw rgba(0, 0, 0, 0.5);
+}
+
+/* the light stays put while the record turns under it */
+.sheen {
+    position: absolute;
     left: 50%;
+    top: 50%;
+    width: 95.7%;
+    aspect-ratio: 1;
     transform: translate(-50%, -50%);
-    width: 75px;
-    height: 75px;
     border-radius: 50%;
-    background: #8b1e2d;
-
+    pointer-events: none;
+    background: conic-gradient(from 118deg,
+        rgba(205, 215, 230, 0) 0deg,
+        rgba(205, 215, 230, 0.075) 16deg,
+        rgba(205, 215, 230, 0) 46deg,
+        rgba(205, 215, 230, 0) 140deg,
+        rgba(205, 215, 230, 0.05) 162deg,
+        rgba(205, 215, 230, 0) 196deg,
+        rgba(205, 215, 230, 0) 296deg,
+        rgba(205, 215, 230, 0.035) 318deg,
+        rgba(205, 215, 230, 0) 348deg);
 }
 
-.center-hole {
+.spindle {
     position: absolute;
-    top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-
-    width: 12px;
-    height: 12px;
-
-    border-radius: 50%;
-
-    background: #111;
-}
-
-.turntable {
-    position: relative;
     top: 50%;
-    width: 400px;
-    height: 400px;
-    margin: 0 auto;
-    background-color: #222;
-}
-
-
-
-
-
-
-
-.turntable-arm {
-    position: absolute;
-    top: 10%;
-    left: 85%;
-    width: 180px;
-    height: 10px;
-    background-color: #555;
-    transform-origin: top left;
-    transform: rotate(90deg);
-    transition: transform 1s ease-in-out;
-}
-
-.turntable.playing .turntable-arm {
-    transform: rotate(110deg);
-}
-
-.turntable.playing .vinyl {
-    animation-play-state: running;
-}
-
-
-.turntable-arm::before {
-    content: '';
-    position: absolute;
-    top:  -50%;
-    left: -5%;
-    width: 20px;
-    height: 20px;
-    background-color: #555;
+    width: 1.7cqw;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
     border-radius: 50%;
+    background: linear-gradient(135deg, #dde1e8, #71767f 70%);
+    box-shadow:
+        0 0 0.4cqw rgba(0, 0, 0, 0.8),
+        inset 0 0 0.2cqw rgba(255, 255, 255, 0.3);
+    pointer-events: none;
 }
 
-.turntable-needle {
-    position: absolute;
-    top: 60%;
-    left: 95%;
+/* tonearm — js drives --arm from song progress:
+   26deg parked -> 43.5deg at the outer groove -> 70deg near the label */
 
-    width: 5px;
-    height: 50px;
-    background-color: #555;
-    transform-origin: top center;
-    transform: rotate(290deg);
-    transition: transform 0.3s ease-in-out;
+.tonearm {
+    position: absolute;
+    left: 87.5cqw;
+    top: 15.2cqw;
+    width: 0;
+    height: 0;
+    z-index: 6;
 }
 
-.turntable-needle::before {
-    content: '';
+.arm {
     position: absolute;
+    left: -0.85cqw;
     top: 0;
-    left: 0;
-    width: 10px;
-    height: 10px;
-    background-color: #555;
-    border-radius: 50%;
+    width: 1.7cqw;
+    height: 42.5cqw;
+    transform-origin: 50% 0;
+    transform: rotate(var(--arm));
+    transition: transform 1.1s cubic-bezier(0.25, 1.2, 0.35, 1);
 }
 
-.now-playing-section {
-    text-align: center;
-    margin-top: 50px;
-}
-
-.now-playing-section h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-button.prev-button,
-button.play-button,
-button.next-button {
-    background-color: #1f1e1e;
-    color: white;
-    border: none;
-    padding: 5px;
-    font-size: 10px;
-    height: 50px;
-    width: 50px;
-    box-shadow: 0 2px 4px rgb(220, 223, 223);
-    cursor: pointer;
-    border-radius: 50%;
-}
-
-.file-button {
-    display: block;
-    margin: 10px auto;
-    width: 100px;
-    border-radius: 10px;
-    text-align: center;
-    justify-content: center;
-    color: black;
-    font-weight: bold;
-    font-size: 20px;
-    border: 10px solid grey;
-    padding: 10px 0px;
-
-}
-
-input[type="file"] {
-    opacity: 0;
-    width: 0.1px;
-    height: 0.1px;
-    overflow: hidden;
-    z-index: -1;
+.arm-tube {
     position: absolute;
-
+    inset: 0;
+    border-radius: 0.9cqw;
+    background: linear-gradient(90deg, #c3c7cf, #8b909a 45%, #565b64);
+    box-shadow: 0.3cqw 0.6cqw 1.2cqw rgba(0, 0, 0, 0.55);
 }
 
-input[type="file"]:focus+label {
-    border-color: black;
+.counterweight {
+    position: absolute;
+    top: -7cqw;
+    left: -0.95cqw;
+    width: 3.6cqw;
+    height: 7.5cqw;
+    border-radius: 1.1cqw;
+    background: linear-gradient(90deg, #3c3f46, #131418 75%);
+    box-shadow:
+        inset 0 0.3cqw 0.6cqw rgba(255, 255, 255, 0.08),
+        0.3cqw 0.6cqw 1.4cqw rgba(0, 0, 0, 0.5);
 }
 
+.headshell {
+    position: absolute;
+    bottom: -1.4cqw;
+    left: 50%;
+    width: 3.4cqw;
+    height: 6cqw;
+    transform: translateX(-50%) rotate(21deg);
+    transform-origin: 50% 0;
+    border-radius: 0.8cqw;
+    background: linear-gradient(90deg, #3f424a, #1b1c21);
+    box-shadow:
+        inset 0 0.2cqw 0.4cqw rgba(255, 255, 255, 0.06),
+        0.3cqw 0.5cqw 1.2cqw rgba(0, 0, 0, 0.5);
+}
 
-.playlist-section {
+/* the stylus */
+.headshell::after {
+    content: '';
+    position: absolute;
+    bottom: -1.3cqw;
+    left: 58%;
+    width: 0.7cqw;
+    height: 1.4cqw;
+    border-radius: 0.25cqw;
+    transform: skewX(-18deg);
+    background: var(--accent);
+}
+
+.pivot-cap {
+    position: absolute;
+    left: -3.5cqw;
+    top: -3.5cqw;
+    width: 7cqw;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #b6bac3, #5e626b 62%, #33363c);
+    box-shadow:
+        0 0.6cqw 1.6cqw rgba(0, 0, 0, 0.5),
+        inset 0 0 0.5cqw rgba(255, 255, 255, 0.1);
+}
+
+.arm-rest {
+    position: absolute;
+    left: 66cqw;
+    top: 52.5cqw;
+    width: 5cqw;
+    height: 3.2cqw;
+    border-radius: 0.9cqw;
+    background: linear-gradient(180deg, #26272c, #101114);
+    box-shadow: inset 0 0.2cqw 0.4cqw rgba(255, 255, 255, 0.05);
+}
+
+/* deck furniture */
+
+.deck-plate {
+    position: absolute;
+    right: 5cqw;
+    top: 3.2cqw;
+    margin: 0;
+    font: 500 1.8cqw var(--mono);
+    letter-spacing: 0.3em;
+    color: rgba(236, 238, 242, 0.38);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+    user-select: none;
+}
+
+.deck-controls {
+    position: absolute;
+    right: 5cqw;
+    bottom: 5cqw;
     display: flex;
-    flex-direction: column;
-    margin-top: 50px;
-    text-align: center;
-    list-style: none;
+    align-items: center;
+    gap: 1.4cqw;
 }
 
-.playlist {
-    list-style: none;
-    padding: 0;
-    background-color: #1a1a1a;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-
-.playlist li {
-    padding: 10px;
-    border-bottom: 1px solid #333;
+.speed-btn {
+    font: 500 11px var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    background: #17181c;
+    border: 1px solid #2c2d33;
+    border-radius: 2cqw;
+    padding: 0.55em 0.85em;
     cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.speed-btn:hover {
+    color: var(--ink);
+    border-color: #4a4c55;
+}
+
+.speed-btn:active {
+    transform: translateY(1px);
+}
+
+.speed-btn.is-active {
+    color: var(--accent);
+    border-color: rgba(242, 244, 248, 0.45);
+    background: var(--accent-soft);
+}
+
+.led {
+    width: 1.5cqw;
+    min-width: 8px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #26262b;
+    box-shadow: inset 0 0 0.4cqw rgba(0, 0, 0, 0.7);
+    transition: background 0.35s, box-shadow 0.35s;
+}
+
+body.playing .led {
+    background: var(--accent);
+    box-shadow:
+        0 0 1.4cqw var(--accent),
+        0 0 3cqw rgba(242, 244, 248, 0.4);
+}
+
+.deck-hint {
+    margin: 16px 4px 0;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    opacity: 0.85;
+}
+
+/* ---------- the player panel ---------- */
+
+.player {
+    margin-top: clamp(10px, 3.5vw, 46px);
+    max-width: 520px;
+}
+
+.track-head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: 20px 0 30px;
+}
+
+.album-cover {
+    width: clamp(84px, 8vw, 106px);
+    aspect-ratio: 1;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.45),
+        0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.album-cover.is-empty {
+    display: none;
+}
+
+.song-title {
+    margin: 0 0 7px;
+    font: 650 clamp(28px, 3.4vw, 42px) / 1.08 var(--serif);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+}
+
+.song-artist {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+}
+
+/* sliders */
+
+input[type='range'] {
+    --fill: 0%;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    height: 22px;
+    cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right,
+        var(--accent) 0%, var(--accent) var(--fill),
+        #2e2f36 var(--fill));
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px;
+    height: 13px;
+    margin-top: -4.5px;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s;
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+    transform: scale(1.18);
+}
+
+input[type='range']::-webkit-slider-thumb:active {
+    transform: scale(0.94);
+}
+
+input[type='range']::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #2e2f36;
+}
+
+input[type='range']::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+input[type='range']::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border: none;
+    border-radius: 50%;
+    background: var(--ink);
+}
+
+.seek-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+.seek-row input {
+    flex: 1;
+}
+
+.transport {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 26px;
+}
+
+.play-button {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: #14151a;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.5),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.12);
+    transition: transform 0.18s, box-shadow 0.18s;
+}
+
+.play-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 14px 32px rgba(0, 0, 0, 0.55),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.play-button:active {
+    transform: scale(0.95);
+}
+
+.play-button svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.skip-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: color 0.18s, border-color 0.18s, transform 0.18s;
+}
+
+.skip-button:hover {
+    color: var(--ink);
+    border-color: #4a4c55;
+    transform: translateY(-1px);
+}
+
+.skip-button:active {
+    transform: scale(0.93);
+}
+
+.skip-button svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.icon-pause { display: none; }
+
+body.playing .icon-pause { display: block; }
+body.playing .icon-play { display: none; }
+
+.volume {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink-dim);
+}
+
+.volume svg {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+}
+
+.volume input {
+    width: 96px;
+}
+
+/* ---------- the crate ---------- */
+
+.crate-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 104px 0 14px;
+}
+
+.crate-count {
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+.crate-hint {
+    margin-left: auto;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    opacity: 0.8;
+}
+
+.crate {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+}
+
+.crate-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 12px 14px;
+    text-align: left;
+    font: 400 13.5px var(--mono);
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+}
+
+.crate-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.crate-row.is-current {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2.5px;
+    height: 14px;
+}
+
+.eq span {
+    width: 3px;
+    height: 30%;
+    border-radius: 1px;
+    background: currentColor;
+}
+
+@keyframes eq-bounce {
+    50% { height: 100%; }
+}
+
+body.playing .crate-row.is-current .eq span {
+    animation: eq-bounce 0.8s ease-in-out infinite;
+}
+
+body.playing .crate-row.is-current .eq span:nth-child(2) { animation-delay: 0.22s; }
+body.playing .crate-row.is-current .eq span:nth-child(3) { animation-delay: 0.45s; }
+
+.crate-thumb {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* little 7-inch disc for tracks with no cover art */
+.crate-disc {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background:
+        repeating-radial-gradient(circle, #101114 0 1px, #202127 1px 2px), var(--label-red);
+}
+
+.crate-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.crate-artist {
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+.crate-row.is-current .crate-artist {
+    color: rgba(242, 244, 248, 0.62);
+}
+
+.crate-duration {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+/* ---------- overlays ---------- */
+
+.drop-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    background: rgba(11, 12, 15, 0.84);
+    backdrop-filter: blur(3px);
+}
+
+.drop-veil[hidden] {
+    display: none;
+}
+
+.drop-veil p {
+    margin: 0;
+    padding: 46px 70px;
+    border: 2px dashed rgba(242, 244, 248, 0.55);
+    border-radius: 20px;
+    color: var(--accent);
+    font: 500 15px var(--mono);
+    letter-spacing: 0.18em;
+}
+
+.notice {
+    position: fixed;
+    left: 24px;
+    bottom: 24px;
+    z-index: 60;
+    margin: 0;
+    padding: 11px 15px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(18, 19, 24, 0.96);
+    color: var(--ink);
+    font-size: 12.5px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes rise {
+    from { transform: translateY(10px); opacity: 0; }
+}
+
+.notice:not([hidden]) {
+    animation: rise 0.25s ease;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 920px) {
+    .studio {
+        grid-template-columns: 1fr;
+        gap: 48px;
+    }
+
+    .deck-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .player {
+        margin-top: 0;
+        max-width: 560px;
+    }
+
+    .crate-head {
+        margin-top: 68px;
+    }
+}
+
+@media (max-width: 560px) {
+    .crate-artist,
+    .crate-hint {
+        display: none;
+    }
+
+    .volume input {
+        width: 64px;
+    }
+}
+
+/* ---------- motion courtesy ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .vinyl,
+    body.playing .logo-dot,
+    body.playing .crate-row.is-current .eq span {
+        animation: none;
+    }
+
+    .arm {
+        transition: none;
+    }
 }
