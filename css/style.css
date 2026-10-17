@@ -1,6 +1,3 @@
-/* vinyl — a little record player
-   matte-black hi-fi: black deck, silver hardware, white pilot lights, and a needle that tracks the song */
-
 :root {
     --bg: #101013;
     --panel: #16171c;
@@ -29,7 +26,6 @@ body {
         var(--bg);
 }
 
-/* film grain over everything, so flat digital colors don't feel sterile */
 body::after {
     content: '';
     position: fixed;
@@ -48,8 +44,6 @@ body::after {
     outline: 2px solid rgba(242, 244, 248, 0.6);
     outline-offset: 3px;
 }
-
-/* ---------- header / footer ---------- */
 
 .site-header {
     width: min(1160px, 92vw);
@@ -112,8 +106,6 @@ body.playing .logo-dot {
     color: var(--ink);
 }
 
-/* ---------- layout ---------- */
-
 main {
     width: min(1160px, 92vw);
     margin: clamp(28px, 4vw, 48px) auto clamp(56px, 8vw, 100px);
@@ -133,10 +125,6 @@ main {
     text-transform: uppercase;
     color: var(--ink-dim);
 }
-
-/* ---------- the turntable ----------
-   deck is drawn on a 560x350 grid, everything inside uses cqw
-   (1cqw = 5.6px at full size) so the whole thing scales cleanly */
 
 .turntable {
     --arm: 26deg;
@@ -166,12 +154,10 @@ main {
         0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
-/* platter + record */
-
 .platter {
     position: absolute;
     left: 34cqw;
-    top: 31.25cqw;   /* dead center of the 62.5cqw-tall deck, so the record doesn't hug the bottom */
+    top: 31.25cqw; 
     width: 56cqw;
     aspect-ratio: 1;
     transform: translate(-50%, -50%);
@@ -250,7 +236,7 @@ body.playing .vinyl {
     position: absolute;
     inset: 32%;
     border-radius: 50%;
-    background-color: var(--label-red);   /* fallback when a track has no art */
+    background-color: var(--label-red);
     background-image: url('../assets/img/oasis-wonderwall-cover.jpg');
     background-size: cover;
     background-position: center;
@@ -259,7 +245,6 @@ body.playing .vinyl {
         0 0 0 0.25cqw rgba(0, 0, 0, 0.5);
 }
 
-/* the light stays put while the record turns under it */
 .sheen {
     position: absolute;
     left: 50%;
@@ -295,9 +280,6 @@ body.playing .vinyl {
         inset 0 0 0.2cqw rgba(255, 255, 255, 0.3);
     pointer-events: none;
 }
-
-/* tonearm — js drives --arm from song progress:
-   26deg parked -> 43.5deg at the outer groove -> 70deg near the label */
 
 .tonearm {
     position: absolute;
@@ -355,7 +337,6 @@ body.playing .vinyl {
         0.3cqw 0.5cqw 1.2cqw rgba(0, 0, 0, 0.5);
 }
 
-/* the stylus */
 .headshell::after {
     content: '';
     position: absolute;
@@ -391,8 +372,6 @@ body.playing .vinyl {
     background: linear-gradient(180deg, #26272c, #101114);
     box-shadow: inset 0 0.2cqw 0.4cqw rgba(255, 255, 255, 0.05);
 }
-
-/* deck furniture */
 
 .deck-plate {
     position: absolute;
@@ -466,8 +445,6 @@ body.playing .led {
     opacity: 0.85;
 }
 
-/* ---------- the player panel ---------- */
-
 .player {
     margin-top: clamp(10px, 3.5vw, 46px);
     max-width: 520px;
@@ -506,8 +483,6 @@ body.playing .led {
     font-size: 12.5px;
     color: var(--ink-dim);
 }
-
-/* sliders */
 
 input[type='range'] {
     --fill: 0%;
@@ -670,8 +645,6 @@ body.playing .icon-play { display: none; }
     width: 96px;
 }
 
-/* ---------- the crate ---------- */
-
 .crate-head {
     display: flex;
     align-items: baseline;
@@ -759,7 +732,6 @@ body.playing .crate-row.is-current .eq span:nth-child(3) { animation-delay: 0.45
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
-/* little 7-inch disc for tracks with no cover art */
 .crate-disc {
     width: 30px;
     height: 30px;
@@ -788,8 +760,6 @@ body.playing .crate-row.is-current .eq span:nth-child(3) { animation-delay: 0.45
     font-size: 12px;
     color: var(--ink-dim);
 }
-
-/* ---------- overlays ---------- */
 
 .drop-veil {
     position: fixed;
@@ -838,8 +808,6 @@ body.playing .crate-row.is-current .eq span:nth-child(3) { animation-delay: 0.45
     animation: rise 0.25s ease;
 }
 
-/* ---------- responsive ---------- */
-
 @media (max-width: 920px) {
     .studio {
         grid-template-columns: 1fr;
@@ -871,8 +839,6 @@ body.playing .crate-row.is-current .eq span:nth-child(3) { animation-delay: 0.45
         width: 64px;
     }
 }
-
-/* ---------- motion courtesy ---------- */
 
 @media (prefers-reduced-motion: reduce) {
     .vinyl,
