@@ -4,7 +4,7 @@ a little record player that runs entirely in the browser. plain html, css and ja
 
 ## run it
 
-just open `index.html`. the typefaces load from google fonts but there are local fallbacks if you're offline.
+just open `index.html`. it uses the system monospace font, so there is nothing to download and it works offline.
 
 ## what it does
 
