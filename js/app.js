@@ -1,5 +1,3 @@
-// vinyl — the player. everything runs locally; dropped files never leave the browser.
-
 const audio = document.querySelector('audio');
 const playButton = document.querySelector('.play-button');
 const turntable = document.querySelector('.turntable');
@@ -35,13 +33,9 @@ const songs = [
 
 let currentSongIndex = 0;
 
-// arm angles, in degrees from straight down:
-// 26 = parked on the rest, 43.5 = touching the outer groove, 70 = near the label
 const ARM_REST = 26;
 const ARM_START = 43.5;
 const ARM_END = 70;
-
-// ---------- the record ----------
 
 function loadSong(index) {
     const song = songs[index];
@@ -54,7 +48,6 @@ function loadSong(index) {
         albumCover.classList.remove('is-empty');
         recordLabel.style.backgroundImage = 'url(' + song.cover + ')';
     } else {
-        // no art in the file's tags — you get the plain red label
         albumCover.classList.add('is-empty');
         recordLabel.style.backgroundImage = 'none';
     }
@@ -160,10 +153,9 @@ audio.addEventListener('loadedmetadata', function () {
 
 audio.addEventListener('ended', function () {
     if (songs.length > 1) {
-        nextSong();              // put the next record on
+        nextSong();    
     } else {
-        pauseSong();             // single record: the arm lifts, the motor stops
-        moveArm();
+        pauseSong();
     }
 });
 
@@ -179,8 +171,6 @@ volumeBar.addEventListener('input', function () {
     setFill(volumeBar);
 });
 
-// keyboard: space plays, arrows skip around.
-// if a real control has focus, let its own key handling win.
 document.addEventListener('keydown', function (e) {
     const onControl = e.target.closest('input, button, a, textarea, select');
 
@@ -189,14 +179,13 @@ document.addEventListener('keydown', function (e) {
         e.preventDefault();
         togglePlay();
     } else if (e.key === 'Enter' && e.target === platter) {
-        togglePlay();            // the platter is a div pretending to be a button
+        togglePlay();
     } else if (!onControl) {
         if (e.key === 'ArrowRight') seekBy(10);
         if (e.key === 'ArrowLeft') seekBy(-10);
     }
 });
 
-// 33 1/3 by default, obviously — but the 45 button does actually work
 speedButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
         speedButtons.forEach(function (b) {
@@ -205,8 +194,6 @@ speedButtons.forEach(function (btn) {
         turntable.classList.toggle('speed-45', btn.dataset.rpm === '45');
     });
 });
-
-// ---------- the crate ----------
 
 function renderCrate() {
     crateCount.textContent = songs.length === 1 ? '1 record' : songs.length + ' records';
@@ -260,7 +247,6 @@ function renderCrate() {
     });
 }
 
-// shows a duration in the crate before a track has ever been played
 function probeDuration(song) {
     const probe = new Audio();
     probe.preload = 'metadata';
@@ -270,10 +256,6 @@ function probeDuration(song) {
     });
     probe.src = song.audio;
 }
-
-// ---------- bring your own records ----------
-// drop audio anywhere on the page; titles, artists and cover art are read
-// straight out of the file's ID3 tags, right here in the browser.
 
 let dragDepth = 0;
 
@@ -333,27 +315,23 @@ function cleanName(name) {
     return name.replace(/\.[a-z0-9]+$/i, '').replace(/_/g, ' ').trim() || 'untitled';
 }
 
-// a small ID3v2 reader — just enough for title, artist and cover art.
-// if a tag can't be parsed we fall back to the filename, no drama.
 async function readTags(file) {
     const tags = {};
 
     try {
-        // the first megabyte is where the tags and embedded art live
         const b = new Uint8Array(await file.slice(0, 1024 * 1024).arrayBuffer());
         if (b.length < 20 || str(b, 0, 3) !== 'ID3') return tags;
 
         const version = b[3];
-        if (version < 3) return tags;    // v2.2 headers are laid out differently; not worth it
+        if (version < 3) return tags;
 
         const tagEnd = Math.min(b.length, 10 + synchsafe(b, 6));
 
         let p = 10;
         while (p + 10 <= tagEnd) {
             const id = str(b, p, 4);
-            if (!/^[A-Z][A-Z0-9]{3}$/.test(id)) break;    // ran into padding
+            if (!/^[A-Z][A-Z0-9]{3}$/.test(id)) break;
 
-            // v2.4 sizes are synchsafe, v2.3 sizes are plain ints
             const size = version >= 4 ? synchsafe(b, p + 4) : uint32(b, p + 4);
             const dataStart = p + 10;
             const dataEnd = Math.min(dataStart + size, tagEnd);
@@ -370,7 +348,6 @@ async function readTags(file) {
             p = dataEnd;
         }
     } catch (e) {
-        // a tag we can't read is not worth crashing over
     }
 
     return tags;
@@ -389,7 +366,6 @@ function str(b, i, len) {
 }
 
 function decodeText(bytes, enc) {
-    // 0 = latin-1, 1 = utf-16, 2 = utf-16be, 3 = utf-8
     const encodings = ['windows-1252', 'utf-16', 'utf-16be', 'utf-8'];
     if (!bytes.length || enc > 3) return '';
 
@@ -408,9 +384,8 @@ function readPicture(b, start, end) {
     if (mimeEnd < 0 || mimeEnd >= end) return null;
 
     const mime = str(b, p, mimeEnd - p) || 'image/jpeg';
-    p = mimeEnd + 2;                            // skip the null and the picture-type byte
+    p = mimeEnd + 2;
 
-    // the description terminator depends on the encoding
     if (enc === 1 || enc === 2) {
         while (p + 1 < end && !(b[p] === 0 && b[p + 1] === 0)) p += 2;
         p += 2;
@@ -420,12 +395,10 @@ function readPicture(b, start, end) {
         p += 1;
     }
 
-    if (end - p < 100) return null;             // suspiciously small image, skip it
+    if (end - p < 100) return null;
 
     return URL.createObjectURL(new Blob([b.subarray(p, end)], { type: mime }));
 }
-
-// ---------- small stuff ----------
 
 let noticeTimer;
 
@@ -437,8 +410,6 @@ function notice(text) {
         noticeEl.hidden = true;
     }, 3200);
 }
-
-// ---------- go ----------
 
 loadSong(currentSongIndex);
 renderCrate();
