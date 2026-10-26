@@ -151,16 +151,7 @@ audio.addEventListener('loadedmetadata', function () {
     renderCrate();
 });
 
-audio.addEventListener('ended', function () {
-    if (songs.length > 1) {
-        nextSong();
-    } else {
-        pauseSong();
-        moveArm();
-    }
-});
-
-progress.addEventListener('input', function () {
+audio.addEventListener('timeupdate', function () {
     if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
 
     audio.currentTime = (progress.value / 100) * audio.duration;
